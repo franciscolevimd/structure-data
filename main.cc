@@ -2,8 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "binary_tree.h"
-#include "node.h"
+#include "expresion_tree.h"
 #include "utils.h"
 
 using namespace std;
@@ -40,27 +39,10 @@ int evaluate(Node *node) {
 }
 
 int main(int, char **) {
-  Node *root = new Node('+');
-  root->left = new Node('+');
-  root->left->left = new Node('3');
-  root->left->right = new Node('^');
-  root->left->right->left = new Node('8');
-  root->left->right->right = new Node('4');
-  root->right = new Node('/');
-  root->right->left = new Node('5');
-  root->right->right = new Node('5');
-
-  BinaryTree *tree = new BinaryTree(root);
-  cout << "In order tree: " << *tree << endl;
+  ExpresionTree *tree = new ExpresionTree();
+  cout << "Ingrese una expresión: ";
   tree->set_trasversal_type(kPostOrder);
-  cout << "Post order tree: " << *tree << endl;
-
+  cin >> *tree;
+  cout << "Expresión postorden: " << *tree << endl;
   delete tree;
-  delete root->left->right->left;
-  delete root->left->right->right;
-  delete root->left->left;
-  delete root->left->right;
-  delete root->left;
-  delete root->right;
-  delete root;
 }

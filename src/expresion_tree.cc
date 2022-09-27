@@ -1,7 +1,9 @@
 #include "expresion_tree.h"
 
 #include <iostream>
-#include <stack>
+#include <sstream>
+
+#include "utils.h"
 
 using namespace std;
 
@@ -14,7 +16,11 @@ ExpresionTree::ExpresionTree(Node* root) : BinaryTree(root) {}
 
 ExpresionTree::~ExpresionTree() {
   expression_->clear();
-  clean(root_);
+  if (root_ != nullptr) {
+    clean(root_);
+    cout << "delete root: " << root_->data << endl;
+    delete root_;
+  }
 }
 
 void ExpresionTree::clean(Node* node) {
@@ -24,11 +30,11 @@ void ExpresionTree::clean(Node* node) {
   clean(node->left);
   clean(node->right);
   if (node->left != nullptr) {
-    cout << "delete left: " << node->data << endl;
+    cout << "delete left: " << node->left->data << endl;
     delete node->left;
   }
   if (node->right != nullptr) {
-    cout << "delete right: " << node->data << endl;
+    cout << "delete right: " << node->right->data << endl;
     delete node->right;
   }
 }
@@ -40,111 +46,72 @@ Node* ExpresionTree::read_expression(std::istream& in) {
 }
 
 Node* ExpresionTree::read_expression(std::string& expression) {
-  stack<Node*> tree_stack = stack<Node*>();
-  return tree_stack.size() > 0 ? tree_stack.top() : nullptr;
+  char data;
+  stack<char> operators_stack = stack<char>();
+  stack<Node*> nodes_stack = stack<Node*>();
+  istringstream in_stream(expression);
+  for (int i = 0; i < expression.size(); i++) {
+    in_stream >> data;
+    if (is_operator(data)) {
+      ExpresionTree::build_tree(data, operators_stack, nodes_stack);
+    } else {
+      nodes_stack.push(new Node(data));
+    }
+  }
+  while (operators_stack.size() > 0) {
+    ExpresionTree::build_tree(operators_stack, nodes_stack);
+  }
+  if (nodes_stack.size() == 1) {
+    return nodes_stack.top();
+  }
+  ExpresionTree::clean_nodes_stack(nodes_stack);
+  return nullptr;
 }
 
+void ExpresionTree::build_tree(stack<char>& operators_stack,
+                               stack<Node*>& nodes_stack) {
+  Node* node_left = nullptr;
+  Node* node_right = nullptr;
+  if (nodes_stack.size() > 1) {
+    node_right = nodes_stack.top();
+    nodes_stack.pop();
+    node_left = nodes_stack.top();
+    nodes_stack.pop();
+    nodes_stack.push(new Node(operators_stack.top(), node_left, node_right));
+    operators_stack.pop();
+  } else {
+    ExpresionTree::clean_operators_stack(operators_stack);
+  }
+}
 
+void ExpresionTree::build_tree(char& data, std::stack<char>& operators_stack,
+                               std::stack<Node*>& nodes_stack) {
+  cout << data;
+  if (operators_stack.size() > 0) {
+    if (is_greater_than(operators_stack.top(), data)) {
+      cout << " is less than " << operators_stack.top() << endl;
+      ExpresionTree::build_tree(operators_stack, nodes_stack);
+      operators_stack.push(data);
+      ExpresionTree::build_tree(operators_stack, nodes_stack);
+      return;
+    }
+  }
+  operators_stack.push(data);
+  cout << endl;
+}
 
+void ExpresionTree::clean_operators_stack(stack<char>& operators_stack) {
+  while (operators_stack.size() > 0) {
+    cout << "pop: " << operators_stack.top() << " ";
+    operators_stack.pop();
+  }
+  cout << endl;
+}
 
-
-
-
-
-
-// #####
-
-
-
-
-
-// #include "tree.h"
-
-// #include <sstream>
-// #include <stack>
-// #include <string>
-
-// #include "node.h"
-// #include "utils.h"
-
-// using namespace std;
-
-// std::istream& operator>>(std::istream& in, Tree& tree) {
-//   //tree = Tree::read_expression(in);
-//   return in;
-// }
-
-// Tree::Tree(Node* root) : root_(root) {}
-
-// Tree::~Tree() {}
-
-// Tree& Tree::operator=(const Tree& other) {
-//   if (this != &other) {
-//     this->root_ = other.root_;
-//   }
-//   return *this;
-// }
-
-// /*Tree Tree::read_expression(std::istream& in) {
-//   string next_line;
-//   getline(in, next_line);
-//   //stack<Tree> tree_stack = Tree::read_expression(next_line);
-//   return tree_stack.size() > 0 ? tree_stack.top() : Tree();
-// }*/
-// /*
-// stack<Tree> Tree::read_expression(std::string& expression) {
-//   char data;
-//   stack<Tree> result;
-//   stack<char> operators_stack;
-//   istringstream in_stream(expression);
-//   for (int i = 0; i < expression.size(); i++) {
-//     in_stream >> data;
-//     if (is_operator(data)) {
-//       operators_stack.push(data);
-//     } else {
-//       Node node(data);
-//       result.push(Tree(&node));
-//     }
-//   }
-//   while(operators_stack.size() > 0) {
-//     //
-//   }
-// }
-// */
-
-
-
-
-
-
-
-
-// #ifndef BINARY_TREE_H_
-// #define BINARY_TREE_H_
-
-// #include "node.h"
-
-// #include <istream>
-// #include <string>
-
-// class BinaryTree {
-//   friend std::istream& operator>>(std::istream& in, BinaryTree& tree);
-
-//  public:
-//   BinaryTree(Node *root = nullptr);
-//   virtual ~BinaryTree();  
-//   inline Node& root() const { return *root_; }
-
-//  private:
-//   //static Tree read_expression(std::istream& in);
-//   //static stack<Tree> read_expression(std::string& expression);
-//   Node* root_;
-// };
-// #endif // BINARY_TREE_H_
-
-
-
-
-
-// friend std::ostream& operator<<(std::ostream& os, const BinaryTree& tree);
-//   friend std::istream& operator>>(std::istream& in, BinaryTree& tree);
+void ExpresionTree::clean_nodes_stack(std::stack<Node*>& nodes_stack) {
+  while (nodes_stack.size() > 0) {
+    cout << "pop: " << nodes_stack.top()->data << " ";
+    nodes_stack.pop();
+  }
+  cout << endl;
+}
