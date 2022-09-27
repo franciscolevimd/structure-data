@@ -1,9 +1,11 @@
 #include "expresion_tree.h"
-#include "node.h"
-#include "utils.h"
 
+#include <cmath>
 #include <iostream>
 #include <sstream>
+
+#include "node.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -23,9 +25,42 @@ ExpresionTree::~ExpresionTree() {
   }
 }
 
+int ExpresionTree::evaluate() { return ExpresionTree::evaluate(root_); }
+
+int ExpresionTree::evaluate(Node* node) {
+  int value_l;
+  int value_r;
+  int result = 0;
+  if (node->left == nullptr) {
+    return is_operator(node->data) ? node->data : node->data - '0';
+  }
+  value_l = evaluate(node->left);
+  value_r = evaluate(node->right);
+  if (is_operator(node->data)) {
+    return evaluate(node->data, value_l, value_r);
+  }
+  return is_operator(node->data) ? node->data : node->data - '0';
+}
+
+int ExpresionTree::evaluate(char operator_v, int value_l, int value_r) {
+  switch (operator_v) {
+    case '^':
+      return pow(value_l, value_r);
+    case '*':
+      return value_l * value_r;
+    case '/':
+      return value_l / value_r;
+    case '+':
+      return value_l + value_r;
+    case '-':
+      return value_l - value_r;
+  }
+  return 0;
+}
+
 Node* ExpresionTree::read_expression(istream& in) {
   char data;
-  string next_line;  
+  string next_line;
   stack<char> operators_stack = stack<char>();
   stack<Node*> nodes_stack = stack<Node*>();
   getline(in, next_line);
