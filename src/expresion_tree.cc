@@ -1,9 +1,9 @@
 #include "expresion_tree.h"
+#include "node.h"
+#include "utils.h"
 
 #include <iostream>
 #include <sstream>
-
-#include "utils.h"
 
 using namespace std;
 
@@ -23,34 +23,14 @@ ExpresionTree::~ExpresionTree() {
   }
 }
 
-void ExpresionTree::clean(Node* node) {
-  if (node == nullptr) {
-    return;
-  }
-  clean(node->left);
-  clean(node->right);
-  if (node->left != nullptr) {
-    cout << "delete left: " << node->left->data << endl;
-    delete node->left;
-  }
-  if (node->right != nullptr) {
-    cout << "delete right: " << node->right->data << endl;
-    delete node->right;
-  }
-}
-
-Node* ExpresionTree::read_expression(std::istream& in) {
-  string next_line;
-  getline(in, next_line);
-  return ExpresionTree::read_expression(next_line);
-}
-
-Node* ExpresionTree::read_expression(std::string& expression) {
+Node* ExpresionTree::read_expression(istream& in) {
   char data;
+  string next_line;  
   stack<char> operators_stack = stack<char>();
   stack<Node*> nodes_stack = stack<Node*>();
-  istringstream in_stream(expression);
-  for (int i = 0; i < expression.size(); i++) {
+  getline(in, next_line);
+  istringstream in_stream(next_line);
+  for (int i = 0; i < next_line.size(); i++) {
     in_stream >> data;
     if (is_operator(data)) {
       ExpresionTree::build_tree(data, operators_stack, nodes_stack);

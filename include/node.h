@@ -11,4 +11,6 @@ struct Node {
   Node *right;
 };
 
+void clean(Node *node);
+
 #endif  // NODE_H_

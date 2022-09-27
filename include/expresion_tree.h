@@ -12,11 +12,9 @@ class ExpresionTree : public BinaryTree {
  public:
   ExpresionTree(Node* root = nullptr);
   virtual ~ExpresionTree();
-  void clean(Node* node);
 
  private:
   static Node* read_expression(std::istream& in);
-  static Node* read_expression(std::string& expression);
   static void build_tree(std::stack<char>& operators_stack,
                          std::stack<Node*>& nodes_stack);
   static void build_tree(char& data, std::stack<char>& operators_stack,
